@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: configserver-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: configserver
+  template:
+    metadata:
+      labels:
+        app: configserver
+    spec:
+      containers:
+      - name: configserver
+        image: pblgllgs/configserver-sb3:v3
+        env:
+        - name: SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULTLABEL
+          valueFrom:
+            configMapKeyRef:
+              name: pblgllgs-configmap
+              key: SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULTLABEL
+        ports:
+        - containerPort: 8071
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name:  configserver
+spec:
+  selector:
+    app:  configserver
+  type:  LoadBalancer
+  ports:
+  - protocol: TCP
+    port:  8071
+    targetPort:  8071

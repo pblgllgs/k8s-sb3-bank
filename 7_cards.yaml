@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cards-deployment
+  labels:
+    app: cards
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cards
+  template:
+    metadata:
+      labels:
+        app: cards
+    spec:
+      containers:
+      - name: cards
+        image: pblgllgs/cards-sb3:v3-k8s
+        ports:
+        - containerPort: 9000
+        env:
+        - name: SPRING_APPLICATION_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: pblgllgs-configmap
+              key: CARDS_APPLICATION_NAME
+        - name: SPRING_PROFILES_ACTIVE
+          valueFrom: 
+            configMapKeyRef:
+              name: pblgllgs-configmap
+              key: SPRING_PROFILES_ACTIVE
+        - name: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+          valueFrom: 
+            configMapKeyRef:
+              name: pblgllgs-configmap
+              key: EUREKA_CLIENT_SERVICEURL_DEFAULTZONE
+        - name: CONFIG_SERVER_HOST
+          valueFrom: 
+            configMapKeyRef:
+              name: pblgllgs-configmap
+              key: CONFIG_SERVER_HOST
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cards
+spec:
+  selector:
+    app: cards
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
